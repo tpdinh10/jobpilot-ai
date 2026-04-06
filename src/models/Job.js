@@ -1,9 +1,13 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const jobSchema = new mongoose.Schema(
   {
     // Ownership: every job belongs to a specific authenticated user.
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
 
     // Core job information
     title: { type: String, required: true, trim: true },
@@ -17,17 +21,18 @@ const jobSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["saved", "applied", "interview", "offer", "rejected"],
-      default: "saved"
+      default: "saved",
     },
 
     // Tracks when application was submitted
-    dateApplied: { type: Date }
+    dateApplied: { type: Date },
   },
-  { timestamps: true } // adds createdAt + updatedAt
+  { timestamps: true }
 );
 
-// Index to optimize queries that filter by userId and sort by newest first.
-// This matches how getJobs() queries are performed.
+// Index to optimize queries
 jobSchema.index({ userId: 1, createdAt: -1 });
 
-module.exports = mongoose.model("Job", jobSchema);
+const Job = mongoose.model("Job", jobSchema);
+
+export default Job;

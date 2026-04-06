@@ -1,15 +1,11 @@
-const router = require("express").Router();
-const { register, login } = require("../controllers/authController");
-const { requireAuth } = require("../middleware/authMiddleware");
-const User = require("../models/User");
+import express from "express";
+import { registerUser, loginUser, getMe } from "../controllers/authController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
-router.post("/register", register);
-router.post("/login", login);
+const router = express.Router();
 
-router.get("/me", requireAuth, async (req, res) => {
-  const user = await User.findById(req.userId).select("_id name email createdAt");
-  if (!user) return res.status(404).json({ message: "user not found" });
-  return res.json({ user });
-});
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.get("/me", protect, getMe);
 
-module.exports = router;
+export default router;

@@ -1,12 +1,12 @@
-# JobPilot API
+# JobPilot AI
 
-Backend REST API that allows users to track job applications, manage resume versions, and compute resume-to-job match scores using weighted keyword analysis.
+AI-powered backend API for resume matching, resume improvement, and cover letter generation.
 
 Deployed production-ready API with authentication, user-scoped data access, and match history tracking.
 ## Live Demo (Deployed API)
-Base URL: https://jobpilot-api.onrender.com  
+Base URL: https://jobpilot-ai.onrender.com  
 
-Health Check: GET https://jobpilot-api.onrender.com/health
+Health Check: GET https://jobpilot-ai.onrender.com/health
 
 ## Tech Stack
 - Node.js

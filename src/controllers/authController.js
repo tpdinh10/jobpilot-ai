@@ -1,62 +1,109 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import { env } from "../config/env.js";
 
-function signToken(userId) {
-  return jwt.sign({ sub: userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "7d"
+const generateToken = (id) => {
+  return jwt.sign({ id }, env.jwtSecret, {
+    expiresIn: env.jwtExpiresIn,
   });
-}
+};
 
-exports.register = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "name, email, password are required" });
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, and password are required",
+      });
     }
-    if (password.length < 8) {
-      return res.status(400).json({ message: "password must be at least 8 characters" });
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
     }
 
-    const normalizedEmail = email.toLowerCase();
-    const existing = await User.findOne({ email: normalizedEmail });
-    if (existing) return res.status(409).json({ message: "email already in use" });
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    const passwordHash = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email: normalizedEmail, passwordHash });
-
-    const token = signToken(user._id.toString());
-    return res.status(201).json({
-      token,
-      user: { id: user._id, name: user.name, email: user.email }
+    const user = await User.create({
+      name,
+      email,
+      passwordHash,
     });
-  } catch (err) {
-    return res.status(500).json({ message: "server error", error: err.message });
+
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        token: generateToken(user._id),
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
-exports.login = async (req, res) => {
+export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "email and password are required" });
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
     }
 
-    const normalizedEmail = email.toLowerCase();
-    const user = await User.findOne({ email: normalizedEmail });
-    if (!user) return res.status(401).json({ message: "invalid credentials" });
+    const user = await User.findOne({ email });
 
-    const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) return res.status(401).json({ message: "invalid credentials" });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
 
-    const token = signToken(user._id.toString());
-    return res.json({
-      token,
-      user: { id: user._id, name: user.name, email: user.email }
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        token: generateToken(user._id),
+      },
     });
-  } catch (err) {
-    return res.status(500).json({ message: "server error", error: err.message });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMe = async (req, res, next) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: "User profile fetched successfully",
+      data: req.user,
+    });
+  } catch (error) {
+    next(error);
   }
 };

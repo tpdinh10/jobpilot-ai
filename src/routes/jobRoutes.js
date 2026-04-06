@@ -1,18 +1,20 @@
-const router = require("express").Router();
-const { requireAuth } = require("../middleware/authMiddleware");
-const {
+import express from "express";
+import { protect } from "../middleware/authMiddleware.js";
+import {
   createJob,
   getJobs,
   getJobById,
   updateJob,
-  deleteJob
-} = require("../controllers/jobController");
+  deleteJob,
+} from "../controllers/jobController.js";
 
-router.post("/", requireAuth, createJob);
-router.get("/", requireAuth, getJobs);
+const router = express.Router();
 
-router.get("/:id", requireAuth, getJobById);
-router.put("/:id", requireAuth, updateJob);
-router.delete("/:id", requireAuth, deleteJob);
+router.post("/", protect, createJob);
+router.get("/", protect, getJobs);
 
-module.exports = router;
+router.get("/:id", protect, getJobById);
+router.put("/:id", protect, updateJob);
+router.delete("/:id", protect, deleteJob);
+
+export default router;
