@@ -2,11 +2,11 @@
 
 AI-powered backend API for resume matching, resume improvement, and cover letter generation.
 
-Deployed production-ready API with authentication, user-scoped data access, and match history tracking.
+Production-ready REST API with authentication, user-scoped data access, AI integration, and history tracking.
 ## Live Demo (Deployed API)
-Base URL: https://jobpilot-ai.onrender.com  
+Base URL: https://jobpilot-api.onrender.com  
 
-Health Check: GET https://jobpilot-ai.onrender.com/health
+Health Check: GET https://jobpilot-api.onrender.com/health
 
 ## Tech Stack
 - Node.js
@@ -14,26 +14,56 @@ Health Check: GET https://jobpilot-ai.onrender.com/health
 - MongoDB Atlas
 - Mongoose
 - JWT Authentication
-- Compound Indexing
+- AI Integration via :contentReference[oaicite:0]{index=0} API (with fallback support)
 - Render Deployment
 
-## Features
-- User authentication (register, login, profile)
+## 🔥 Features
+
+### 🔐 Authentication
+- Register user
+- Login user
+- Get current user profile
 - JWT-protected routes
+
+### 📄 Resume Management
+- Create resume
+- Get resumes (user-specific)
+
+### 💼 Job Management
 - Full CRUD for jobs
-- Resume version storage
-- Resume-to-job match scoring using weighted keyword analysis and normalization
-- Normalization and keyword filtering
-- Match history tracking
+- User-scoped data protection
+
+### 🤖 AI Features
+- **Analyze Match**
+  - Compare resume with job description
+  - Returns:
+    - matchScore
+    - matchedSkills
+    - missingSkills
+
+- **Improve Resume**
+  - Rewrite resume content into stronger bullet points
+
+- **Generate Cover Letter**
+  - Create tailored cover letter from resume + job
+
+- **AI History**
+  - Stores previous AI outputs per user
+
+### 🧠 System Features
+- Structured AI response formatting
+- Fallback AI system when API fails
 - Strict user ownership enforcement
 - Production deployment on Render
 
-## API Endpoints
+## 📡 API Endpoints
 
 ### Auth
 - POST /api/auth/register
 - POST /api/auth/login
 - GET /api/auth/me
+
+---
 
 ### Jobs
 - POST /api/jobs
@@ -42,75 +72,45 @@ Health Check: GET https://jobpilot-ai.onrender.com/health
 - PUT /api/jobs/:id
 - DELETE /api/jobs/:id
 
+---
+
 ### Resumes
 - POST /api/resumes
 - GET /api/resumes
 
-### Match (protected)
-All match routes require:
+---
+
+### 🤖 AI (Protected)
+
+All AI routes require:
 
 Authorization: `Bearer <your_jwt_token>`
 
-- POST /api/match
-- GET /api/match
+- POST /api/ai/analyze-match
+- POST /api/ai/improve-resume
+- POST /api/ai/generate-cover-letter
+- GET /api/ai/history
 
-#### POST /api/match
-Calculates a match score between a saved resume and a saved job description and saves the result.
+## 📦 Sample AI Response
 
-Headers
-Authorization: `Bearer <your_jwt_token>`
-
-Content-Type: `application/json`
-
-Request Body
+### POST /api/ai/analyze-match
 
 ```json
 {
-  "jobId": "<job_id>",
-  "resumeId": "<resume_id>"
+  "success": true,
+  "data": {
+    "matchScore": 82,
+    "matchedSkills": ["Node.js", "Express", "MongoDB"],
+    "missingSkills": ["Docker", "AWS"],
+    "summary": "Strong backend match with some missing cloud skills."
+  }
 }
 ```
-Example response
-```json
-{
-  "jobId": "<job_id>",
-  "resumeId": "<resume_id>",
-  "score": 62,
-  "matchedKeywords": ["node", "express", "mongodb", "jwt"],
-  "missingKeywords": ["docker", "aws"],
-  "matchId": "<match_id>"
-}
-```
-`GET /api/match`
-
-Returns saved match history for the logged-in user.
-
-Headers
-
-Authorization: `Bearer <your_jwt_token>`
-
-Example response
-
-```json
-{
-  "matches": [
-    {
-      "_id": "<match_id>",
-      "jobId": "<job_id>",
-      "resumeId": "<resume_id>",
-      "score": 62,
-      "matchedKeywords": ["node", "express", "mongodb", "jwt"],
-      "missingKeywords": ["docker", "aws"],
-      "createdAt": "2026-02-10T00:00:00.000Z"
-    }
-  ]
-}
-```
-## Getting Started
+## 🛠️ Getting Started
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/tpdinh10/jobpilot-api.git
+git clone https://github.com/tpdinh10/jobpilot-ai.git
 cd jobpilot-api
 ```
 
@@ -127,6 +127,7 @@ PORT=5000
 MONGO_URI=your_mongodb_atlas_connection_string
 JWT_SECRET=your_jwt_secret
 JWT_EXPIRES_IN=7d
+OPENAI_API_KEY=your_openai_api_key
 ```
 
 ### 4. Run the server
@@ -158,9 +159,9 @@ Server runs at: `http://localhost:5000`
   "content": "Built REST APIs with Node, Mongo, Express and Git."
 }
 ```
-4. Run match:
+4. Analyze match:
 
-`POST /api/match`
+`POST /api/ai/analyze-match`
 ```json
 {
   "jobId": "<job_id>",
