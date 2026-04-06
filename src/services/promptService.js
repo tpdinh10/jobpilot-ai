@@ -13,7 +13,8 @@ Use this exact format:
   "matchScore": 0,
   "matchedSkills": [],
   "missingSkills": [],
-  "explanation": []
+  "explanation": [],
+  "summary": ""
 }
 
 Rules:
@@ -21,7 +22,9 @@ Rules:
 - matchedSkills must be an array of short skill phrases
 - missingSkills must be an array of short skill phrases
 - explanation must be an array of short bullet-style strings
+- summary must be one short sentence
 - keep output concise and structured
+- do not invent skills not supported by the resume or job description
 
 Resume:
 ${resumeText}
@@ -47,7 +50,8 @@ Use this exact format:
   "wording": [],
   "structure": [],
   "betterBulletPoints": [],
-  "missingKeywords": []
+  "missingKeywords": [],
+  "summary": ""
 }
 
 Rules:
@@ -56,7 +60,10 @@ Rules:
 - structure = formatting or section-level suggestions
 - betterBulletPoints = rewritten bullet points
 - missingKeywords = important missing keywords from the job description
+- summary must be one short sentence
 - keep each item short and useful
+- do not invent unrealistic experience
+- betterBulletPoints should sound stronger, clearer, and more professional
 
 Resume:
 ${resumeText}
@@ -78,7 +85,8 @@ Do not include explanation outside JSON.
 
 Use this exact format:
 {
-  "coverLetter": ""
+  "coverLetter": "",
+  "summary": ""
 }
 
 Rules:
@@ -87,6 +95,7 @@ Rules:
 - sound natural
 - focus on fit for the job
 - do not invent unrealistic experience
+- summary must be one short sentence describing the result
 
 Resume:
 ${resumeText}

@@ -11,13 +11,21 @@ const client = new OpenAI({
 });
 
 const isFallbackEnabled =
-  String(process.env.AI_FALLBACK_ENABLED || "true").toLowerCase() === "true";
+  String(process.env.AI_FALLBACK_ENABLED || "false").toLowerCase() === "true";
+
+const openAiModel = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 
 const safeJsonParse = (content) => {
   try {
     return JSON.parse(content);
   } catch {
     return null;
+  }
+};
+
+const validateTextInputs = (resumeText, jobDescription) => {
+  if (!resumeText || !jobDescription) {
+    throw new Error("resumeText and jobDescription are required");
   }
 };
 
@@ -32,6 +40,8 @@ const buildFallbackAnalyzeMatch = () => {
       "The resume includes API and database work.",
       "The job asks for cloud and deployment tools not clearly shown in the resume.",
     ],
+    summary:
+      "Strong backend foundation, but cloud and deployment skills are not clearly shown.",
   };
 };
 
@@ -55,6 +65,8 @@ const buildFallbackImproveResume = () => {
       "Developed backend features for resume and job tracking with user-scoped data access.",
     ],
     missingKeywords: ["AWS", "Docker", "CI/CD"],
+    summary:
+      "Resume can be improved by adding stronger action verbs, clearer impact, and missing technical keywords.",
   };
 };
 
@@ -63,6 +75,8 @@ const buildFallbackCoverLetter = () => {
     source: "fallback",
     coverLetter:
       "Dear Hiring Manager,\n\nI am excited to apply for this role because my background in backend development, REST API design, and database-driven applications aligns well with your requirements. Through projects using Node.js, Express, and MongoDB, I have built secure and scalable features that strengthened my problem-solving and software engineering skills. I would welcome the opportunity to contribute my technical skills and continue growing as part of your team.\n\nSincerely,\nKate Dinh",
+    summary:
+      "Generated a general backend-focused cover letter based on resume and job description.",
   };
 };
 
@@ -72,7 +86,7 @@ const createChatCompletion = async (prompt) => {
   }
 
   const response = await client.chat.completions.create({
-    model: process.env.OPENAI_MODEL,
+    model: openAiModel,
     messages: [
       {
         role: "system",
@@ -95,8 +109,18 @@ const createChatCompletion = async (prompt) => {
   return content;
 };
 
+const handleAiError = (featureName, error) => {
+  console.error(`[AI SERVICE] ${featureName} failed:`, error.message);
+
+  if (!isFallbackEnabled) {
+    throw new Error(`AI request failed: ${error.message}`);
+  }
+};
+
 export const analyzeMatch = async (resumeText, jobDescription) => {
   try {
+    validateTextInputs(resumeText, jobDescription);
+
     const prompt = buildAnalyzeMatchPrompt(resumeText, jobDescription);
     const content = await createChatCompletion(prompt);
     const parsed = safeJsonParse(content);
@@ -117,18 +141,21 @@ export const analyzeMatch = async (resumeText, jobDescription) => {
       explanation: Array.isArray(parsed.explanation)
         ? parsed.explanation
         : [],
+      summary:
+        typeof parsed.summary === "string"
+          ? parsed.summary
+          : "Match analysis completed successfully.",
     };
   } catch (error) {
-    if (!isFallbackEnabled) {
-      throw new Error(`AI request failed: ${error.message}`);
-    }
-
+    handleAiError("analyzeMatch", error);
     return buildFallbackAnalyzeMatch();
   }
 };
 
 export const improveResume = async (resumeText, jobDescription) => {
   try {
+    validateTextInputs(resumeText, jobDescription);
+
     const prompt = buildImproveResumePrompt(resumeText, jobDescription);
     const content = await createChatCompletion(prompt);
     const parsed = safeJsonParse(content);
@@ -148,18 +175,21 @@ export const improveResume = async (resumeText, jobDescription) => {
       missingKeywords: Array.isArray(parsed.missingKeywords)
         ? parsed.missingKeywords
         : [],
+      summary:
+        typeof parsed.summary === "string"
+          ? parsed.summary
+          : "Resume improvement completed successfully.",
     };
   } catch (error) {
-    if (!isFallbackEnabled) {
-      throw new Error(`AI request failed: ${error.message}`);
-    }
-
+    handleAiError("improveResume", error);
     return buildFallbackImproveResume();
   }
 };
 
 export const generateCoverLetter = async (resumeText, jobDescription) => {
   try {
+    validateTextInputs(resumeText, jobDescription);
+
     const prompt = buildCoverLetterPrompt(resumeText, jobDescription);
     const content = await createChatCompletion(prompt);
     const parsed = safeJsonParse(content);
@@ -172,12 +202,13 @@ export const generateCoverLetter = async (resumeText, jobDescription) => {
       source: "real",
       coverLetter:
         typeof parsed.coverLetter === "string" ? parsed.coverLetter : "",
+      summary:
+        typeof parsed.summary === "string"
+          ? parsed.summary
+          : "Cover letter generated successfully.",
     };
   } catch (error) {
-    if (!isFallbackEnabled) {
-      throw new Error(`AI request failed: ${error.message}`);
-    }
-
+    handleAiError("generateCoverLetter", error);
     return buildFallbackCoverLetter();
   }
 };
