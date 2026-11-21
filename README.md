@@ -1,174 +1,229 @@
+
 # JobPilot AI
 
-AI-powered backend API for resume matching, resume improvement, and cover letter generation.
+An AI-powered job application assistant that helps users manage resumes, analyze job matches, improve resumes, and generate tailored cover letters.
 
-Production-ready REST API with authentication, user-scoped data access, AI integration, and history tracking.
-## Live Demo (Deployed API)
-Base URL: https://jobpilot-api.onrender.com  
+Built with React, Node.js, Express, MongoDB, and the OpenAI API.
 
-Health Check: GET https://jobpilot-api.onrender.com/health
+## Application Screenshots
+
+### Dashboard
+![JobPilot AI Dashboard](screenshots/dashboard.png)
+
+### Resume Management
+![Resume Management](screenshots/resumes.png)
+
+### AI Job Matching
+![AI Job Matching](screenshots/job-matching.png)
+
+### AI History
+![AI History](screenshots/ai-history.png)
+
+## Features
+
+### Authentication
+- User registration and login
+- JWT-based authentication
+- Protected API endpoints and frontend routes
+
+### Resume Management
+- Create resumes from text
+- Upload PDF resumes (up to 5 MB)
+- Extract text from PDF files
+- View and delete saved resumes
+- Store resume content in MongoDB
+
+### AI Job Matching
+- Save job descriptions
+- Select a resume and saved job
+- Analyze resume-to-job compatibility
+- Generate resume improvement suggestions
+- Generate tailored cover letters
+- Display AI results in a readable format
+
+### AI History
+- Save successful AI analyses
+- Review previous match analyses
+- Review resume improvements and cover letters
+- Copy generated results
 
 ## Tech Stack
+
+**Frontend**
+- React 19
+- Vite
+- Tailwind CSS
+- React Router
+- Axios
+- Lucide React
+
+**Backend**
 - Node.js
-- Express
-- MongoDB Atlas
+- Express 5
+- MongoDB
 - Mongoose
-- JWT Authentication
-- AI Integration via :contentReference[oaicite:0]{index=0} API (with fallback support)
-- Render Deployment
+- JWT authentication
+- OpenAI API
+- Multer
+- pdf-parse
 
-## 🔥 Features
+## Architecture
 
-### 🔐 Authentication
-- Register user
-- Login user
-- Get current user profile
-- JWT-protected routes
+```text
+React + Vite
+     |
+     | HTTP / REST API
+     v
+Node.js + Express
+     |
+     +-- JWT Authentication
+     |
+     +-- Resume Management
+     |       |
+     |       +-- PDF Text Extraction
+     |
+     +-- Job Management
+     |
+     +-- AI Services
+     |       |
+     |       +-- OpenAI API
+     |
+     v
+MongoDB Atlas
+```
 
-### 📄 Resume Management
-- Create resume
-- Get resumes (user-specific)
+## API Endpoints
 
-### 💼 Job Management
-- Full CRUD for jobs
-- User-scoped data protection
+### Authentication
 
-### 🤖 AI Features
-- **Analyze Match**
-  - Compare resume with job description
-  - Returns:
-    - matchScore
-    - matchedSkills
-    - missingSkills
-
-- **Improve Resume**
-  - Rewrite resume content into stronger bullet points
-
-- **Generate Cover Letter**
-  - Create tailored cover letter from resume + job
-
-- **AI History**
-  - Stores previous AI outputs per user
-
-### 🧠 System Features
-- Structured AI response formatting
-- Fallback AI system when API fails
-- Strict user ownership enforcement
-- Production deployment on Render
-
-## 📡 API Endpoints
-
-### Auth
-- POST /api/auth/register
-- POST /api/auth/login
-- GET /api/auth/me
-
----
-
-### Jobs
-- POST /api/jobs
-- GET /api/jobs
-- GET /api/jobs/:id
-- PUT /api/jobs/:id
-- DELETE /api/jobs/:id
-
----
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Register a user |
+| POST | `/api/auth/login` | Log in |
+| GET | `/api/auth/me` | Get authenticated user |
 
 ### Resumes
-- POST /api/resumes
-- GET /api/resumes
 
----
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/resumes` | Create a text resume |
+| POST | `/api/resumes/upload` | Upload a PDF resume |
+| GET | `/api/resumes` | Get saved resumes |
+| GET | `/api/resumes/:id` | Get a resume |
+| DELETE | `/api/resumes/:id` | Delete a resume |
 
-### 🤖 AI (Protected)
+### Jobs
 
-All AI routes require:
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/jobs` | Create a job |
+| GET | `/api/jobs` | Get saved jobs |
+| GET | `/api/jobs/:id` | Get a job |
+| PUT | `/api/jobs/:id` | Update a job |
+| DELETE | `/api/jobs/:id` | Delete a job |
 
-Authorization: `Bearer <your_jwt_token>`
+### AI
 
-- POST /api/ai/analyze-match
-- POST /api/ai/improve-resume
-- POST /api/ai/generate-cover-letter
-- GET /api/ai/history
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/ai/analyze-match` | Analyze resume-job match |
+| POST | `/api/ai/improve-resume` | Generate resume improvements |
+| POST | `/api/ai/generate-cover-letter` | Generate a cover letter |
+| GET | `/api/ai/history` | Get saved AI results |
 
-## 📦 Sample AI Response
+AI endpoints require authentication and accept a `resumeId` and `jobId`.
 
-### POST /api/ai/analyze-match
+## Local Setup
 
-```json
-{
-  "success": true,
-  "data": {
-    "matchScore": 82,
-    "matchedSkills": ["Node.js", "Express", "MongoDB"],
-    "missingSkills": ["Docker", "AWS"],
-    "summary": "Strong backend match with some missing cloud skills."
-  }
-}
-```
-## 🛠️ Getting Started
+### Prerequisites
 
-### 1. Clone the repo
+- Node.js and npm
+- MongoDB database
+- OpenAI API key
+
+### 1. Clone the repository
+
 ```bash
 git clone https://github.com/tpdinh10/jobpilot-ai.git
-cd jobpilot-api
+cd jobpilot-ai
 ```
 
-### 2. Install dependencies
+### 2. Install backend dependencies
+
 ```bash
 npm install
 ```
 
-### 3. Create a .env file
-(.env should not be committed)
+### 3. Configure environment variables
+
+Create a `.env` file in the project root:
 
 ```env
 PORT=5000
-MONGO_URI=your_mongodb_atlas_connection_string
-JWT_SECRET=your_jwt_secret
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_secure_jwt_secret
 JWT_EXPIRES_IN=7d
 OPENAI_API_KEY=your_openai_api_key
 ```
 
-### 4. Run the server
+### 4. Start the backend
+
 ```bash
 npm run dev
 ```
-Server runs at: `http://localhost:5000`
 
-## Quick Test Flow
+The backend runs on port 5000 with the current local configuration.
 
-1. Register or login to obtain a JWT token.
+### 5. Install frontend dependencies
 
-2. Create a job:
+Open a second terminal:
 
-`POST /api/jobs`
-```json
-{
-  "title": "Backend Engineer",
-  "company": "DemoCorp",
-  "description": "Node.js MongoDB Express JWT React Git"
-}
-```
-3. Create a resume:
-
-`POST /api/resumes`
-```json
-{
-  "title": "Resume v1",
-  "content": "Built REST APIs with Node, Mongo, Express and Git."
-}
-```
-4. Analyze match:
-
-`POST /api/ai/analyze-match`
-```json
-{
-  "jobId": "<job_id>",
-  "resumeId": "<resume_id>"
-}
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-All protected routes require:
+Open:
 
-`Authorization: Bearer <your_jwt_token>`
+http://localhost:5173
+
+## Usage
+
+1. Register or log in.
+2. Upload a PDF resume or create a text resume.
+3. Open AI Job Matching.
+4. Save a job description.
+5. Select the resume and job.
+6. Run Match Analysis, Improve Resume, or Generate Cover Letter.
+7. Review previous results in AI History.
+
+## Security
+
+- JWT authentication for protected endpoints
+- User-specific resume, job, and AI history records
+- PDF upload size and file-type restrictions
+- Environment variables excluded from Git
+
+## Current Limitations
+
+- PDF extraction works best with text-based PDFs; scanned PDFs may require OCR.
+- AI-generated content should be reviewed for accuracy before use.
+- AI requests require a configured OpenAI API key and may incur API usage charges.
+- The original uploaded PDF is not stored; extracted text is saved instead.
+
+## Future Improvements
+
+- Job application status tracking interface
+- Search and filters for saved jobs
+- Export AI-generated documents
+- Automated testing and deployment improvements
+
+## Author
+
+Kate Dinh
+
+Computer Science Graduate — California State University, Long Beach
+
+GitHub: https://github.com/tpdinh10
+```

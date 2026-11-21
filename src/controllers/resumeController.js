@@ -1,4 +1,5 @@
 import Resume from "../models/Resume.js";
+import { PDFParse } from "pdf-parse";
 
 export const createResume = async (req, res, next) => {
   try {
@@ -94,5 +95,69 @@ export const deleteResume = async (req, res, next) => {
       success: false,
       message: "Invalid resume id",
     });
+  }
+};
+
+export const uploadResumePDF = async (req, res, next) => {
+  let parser;
+
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select a PDF file.",
+      });
+    }
+
+    // Check the PDF file signature
+    const signature = req.file.buffer
+      .subarray(0, 5)
+      .toString("ascii");
+
+    if (signature !== "%PDF-") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid PDF file.",
+      });
+    }
+
+    // Extract text using pdf-parse v2
+    parser = new PDFParse({
+      data: new Uint8Array(req.file.buffer),
+    });
+
+    const result = await parser.getText();
+    const content = result.text?.trim();
+
+    if (!content) {
+      return res.status(422).json({
+        success: false,
+        message:
+          "No readable text found. Please upload a text-based PDF.",
+      });
+    }
+
+    const title =
+      req.body.title?.trim() ||
+      req.file.originalname.replace(/\.pdf$/i, "");
+
+    // Save extracted text to MongoDB
+    const resume = await Resume.create({
+      userId: req.user._id,
+      title,
+      content,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "PDF resume uploaded successfully",
+      data: resume,
+    });
+  } catch (error) {
+    next(error);
+  } finally {
+    if (parser) {
+      await parser.destroy().catch(() => {});
+    }
   }
 };

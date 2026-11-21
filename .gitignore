@@ -1,3 +1,32 @@
-# ignore dependencies and secrets
-node_modules
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Environment variables and secrets
 .env
+.env.*
+!.env.example
+
+# Local configuration
+.local
+src/config/env.js
+
+# Build output
+dist/
+frontend/dist/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
